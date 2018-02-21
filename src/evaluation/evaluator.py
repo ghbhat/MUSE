@@ -190,7 +190,7 @@ class Evaluator(object):
         self.word_translation(to_log)
         self.sent_translation(to_log)
         self.dist_mean_cosine(to_log)
-
+        
     def eval_dis(self, to_log):
         """
         Evaluate discriminator predictions and accuracy.

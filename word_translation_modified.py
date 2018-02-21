@@ -5,18 +5,14 @@
 # LICENSE file in the root directory of this source tree.
 #
 
+#modified by gayatri
+
+from __future__ import print_function
 import os, sys
-from logging import getLogger
 import numpy as np
 import torch
+from src.utils import get_nn_avg_dist
 
-from ..utils import get_nn_avg_dist
-
-
-DIC_EVAL_PATH = '/projects/tir1/users/gbhat/data/muse-data/crosslingual/dictionaries/'
-
-
-logger = getLogger()
 
 
 def load_identical_char_dico(word2id1, word2id2):
@@ -28,7 +24,7 @@ def load_identical_char_dico(word2id1, word2id2):
         raise Exception("No identical character strings were found. "
                         "Please specify a dictionary.")
 
-    logger.info("Found %i pairs of identical character strings." % len(pairs))
+    print("Found %i pairs of identical character strings." % len(pairs))
 
     # sort the dictionary by source word frequencies
     pairs = sorted(pairs, key=lambda x: word2id1[x[0]])
@@ -54,8 +50,8 @@ def load_dictionary(path, word2id1, word2id2):
 
     with open(path, 'r') as f:
         for _, line in enumerate(f):
-            assert line == line.lower()
-            word1, word2 = line.rstrip().split()
+            line = line.lower()
+            word1, word2 = line.rstrip().split(',')
             if word1 in word2id1 and word2 in word2id2:
                 pairs.append((word1, word2))
             else:
@@ -63,7 +59,7 @@ def load_dictionary(path, word2id1, word2id2):
                 not_found1 += int(word1 not in word2id1)
                 not_found2 += int(word2 not in word2id2)
 
-    logger.info("Found %i pairs of words in the dictionary (%i unique). "
+    print("Found %i pairs of words in the dictionary (%i unique). "
                 "%i other pairs contained at least one unknown word "
                 "(%i in lang1, %i in lang2)"
                 % (len(pairs), len(set([x for x, _ in pairs])),
@@ -79,13 +75,11 @@ def load_dictionary(path, word2id1, word2id2):
     return dico
 
 
-def get_word_translation_accuracy(lang1, word2id1, emb1, lang2, word2id2, emb2, method):
+def get_word_translation_accuracy(dico, word2id1, emb1, word2id2, emb2, method):
     """
     Given source and target word embeddings, and a dictionary,
     evaluate the translation accuracy using the precision@k.
     """
-    path = os.path.join(DIC_EVAL_PATH, '%s-%s.5000-6500.txt' % (lang1, lang2))
-    dico = load_dictionary(path, word2id1, word2id2)
     dico = dico.cuda() if emb1.is_cuda else dico
 
     assert dico[:, 0].max() < emb1.size(0)
@@ -142,7 +136,7 @@ def get_word_translation_accuracy(lang1, word2id1, emb1, lang2, word2id2, emb2, 
             matching[src_id] = min(matching.get(src_id, 0) + _matching[i], 1)
         # evaluate precision@k
         precision_at_k = 100 * np.mean(list(matching.values()))
-        logger.info("%i source words - %s - Precision at k = %i: %f" %
+        print("%i source words - %s - Precision at k = %i: %f" %
                     (len(matching), method, k, precision_at_k))
         results.append(('precision_at_%i' % k, precision_at_k))
 

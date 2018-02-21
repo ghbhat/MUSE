@@ -13,7 +13,7 @@ import torch
 from src.utils import bow_idf, get_nn_avg_dist
 
 
-EUROPARL_DIR = 'data/crosslingual/europarl'
+EUROPARL_DIR = '/projects/tir1/users/gbhat/data/muse-data/crosslingual/europarl'
 
 
 logger = getLogger()
